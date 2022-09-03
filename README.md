@@ -1,1 +1,3 @@
 # sort-algorithm
+
+yarn watch
