@@ -32,7 +32,7 @@ function ArrayTimSortImpl(sortState) {
     // 分区入栈
     PushRun(sortState, low, currentRunLength);
 
-    // // 合并分区
+    // 合并分区
     // MergeCollapse(sortState);
 
     // 寻找下一个分区
@@ -147,8 +147,7 @@ function BinaryInsertionSort(sortState, low, startArg, high) {
   }
 }
 
-// base是分区的起始下标
-// length是分区的长度
+// base是分区的起始下标，length就是分区长度
 function PushRun(sortState, base, length) {
   const stackSize = sortState.pendingRunsSize;
 
@@ -173,7 +172,5 @@ function GetPendingRunLength(pendingRuns, run) {
 function SetPendingRunLength(pendingRuns, run, value) {
   pendingRuns[(run << 1) + 1] = value;
 }
-
-function MergeCollapse() {}
 
 exports.ArrayTimSortImpl = ArrayTimSortImpl;

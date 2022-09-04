@@ -27,29 +27,29 @@ describe("数组Diff", () => {
     expect(res).toEqual(arr.sort(compare));
   });
 
-  // it("整数64", () => {
-  //   const arr = [];
+  it("整数64", () => {
+    const arr = [];
 
-  //   for (let i = 0; i < 64; i++) {
-  //     arr[i] = (Math.random() * 1000) >> 1;
-  //   }
+    for (let i = 0; i < 64; i++) {
+      arr[i] = (Math.random() * 1000) >> 1;
+    }
 
-  //   const res = sort([...arr], compare);
+    const res = sort([...arr], compare);
 
-  //   expect(res).toEqual(arr.sort(compare));
-  // });
+    expect(res).toEqual(arr.sort(compare));
+  });
 
-  // it("整数164", () => {
-  //   const arr = [];
+  it("整数164", () => {
+    const arr = [];
 
-  //   for (let i = 0; i < 164; i++) {
-  //     arr[i] = (Math.random() * 1000) >> 1;
-  //   }
+    for (let i = 0; i < 164; i++) {
+      arr[i] = (Math.random() * 1000) >> 1;
+    }
 
-  //   const res = sort([...arr], compare);
+    const res = sort([...arr], compare);
 
-  //   expect(res).toEqual(arr.sort(compare));
-  // });
+    expect(res).toEqual(arr.sort(compare));
+  });
 
   // it("小数164", () => {
   //   const arr = [];

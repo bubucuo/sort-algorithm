@@ -5,7 +5,7 @@ exports.TimSort = (array, compare = (a, b) => a - b) => {
     workArray: array,
     Compare: compare,
     // tempArray: [],
-    // 记录分区信息的栈的大小
+    // 记录分区的个数
     pendingRunsSize: 0,
     // 记录分区信息的栈
     pendingRuns: [],
