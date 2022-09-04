@@ -11,7 +11,7 @@ function ArrayTimSortImpl(sortState) {
   let remaining = length;
 
   // 计算分区的最小长度值
-  // const minRunLength = ComputeMinRunLength(remaining);
+  const minRunLength = ComputeMinRunLength(remaining);
 
   while (remaining !== 0) {
     // 寻找分区，并返回分区长度值
@@ -102,7 +102,21 @@ function ReverseRange(array, from, to) {
   }
 }
 
-function ComputeMinRunLength() {}
+// if n < 64, return n。 此时采用二分插入排序
+// else if n 是 2 的幂， return 32
+// else return k,  32 <= k <= 64,
+function ComputeMinRunLength(nArg) {
+  let n = nArg;
+  let r = 0;
+
+  while (n >= 64) {
+    r = r | (n & 1);
+    n = n >> 1;
+  }
+
+  const minRunLength = n + r;
+  return minRunLength;
+}
 
 function BinaryInsertionSort() {}
 
