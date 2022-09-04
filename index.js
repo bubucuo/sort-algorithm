@@ -5,8 +5,10 @@ exports.TimSort = (array, compare = (a, b) => a - b) => {
     workArray: array,
     Compare: compare,
     // tempArray: [],
-    // pendingRunsSize: 0,
-    // pendingRuns: [],
+    // 记录分区信息的栈的大小
+    pendingRunsSize: 0,
+    // 记录分区信息的栈
+    pendingRuns: [],
 
     // minGallop: 7,
   };
