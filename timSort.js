@@ -16,18 +16,18 @@ function ArrayTimSortImpl(sortState) {
   while (remaining !== 0) {
     // 寻找分区，并返回分区长度值
     let currentRunLength = CountAndMakeRun(sortState, low, low + remaining);
-    // if (currentRunLength < minRunLength) {
-    //   // 扩展分区
-    //   const forceRunLength = Math.min(minRunLength, remaining);
-    //   BinaryInsertionSort(
-    //     sort,
-    //     low,
-    //     low + currentRunLength,
-    //     low + forceRunLength
-    //   );
+    if (currentRunLength < minRunLength) {
+      // 扩展分区
+      const forceRunLength = Math.min(minRunLength, remaining);
+      BinaryInsertionSort(
+        sortState,
+        low,
+        low + currentRunLength,
+        low + forceRunLength
+      );
 
-    //   currentRunLength = forceRunLength;
-    // }
+      currentRunLength = forceRunLength;
+    }
 
     // // 分区入栈
     // PushRun(sortState, low, currentRunLength);
@@ -61,7 +61,7 @@ function CountAndMakeRun(sortState, lowArg, high) {
   //根据前两个元素来判断是否是降序
   const isDescending = order < 0;
 
-  const previousElement = elementLow;
+  let previousElement = elementLow;
   for (let idx = low + 1; idx < high; idx++) {
     const currentElement = workArray[idx];
     order = sortState.Compare(currentElement, previousElement);
@@ -118,7 +118,34 @@ function ComputeMinRunLength(nArg) {
   return minRunLength;
 }
 
-function BinaryInsertionSort() {}
+function BinaryInsertionSort(sortState, low, startArg, high) {
+  const workArray = sortState.workArray;
+  let start = low === startArg ? startArg + 1 : startArg;
+
+  for (; start < high; ++start) {
+    let left = low,
+      right = start;
+
+    const pivot = workArray[right];
+
+    while (left < right) {
+      const mid = left + ((right - left) >> 1);
+      const order = sortState.Compare(pivot, workArray[mid]);
+
+      if (order < 0) {
+        // 左边
+        right = mid;
+      } else {
+        left = mid + 1;
+      }
+    }
+
+    for (let p = start; p > left; --p) {
+      workArray[p] = workArray[p - 1];
+    }
+    workArray[left] = pivot;
+  }
+}
 
 function PushRun() {}
 

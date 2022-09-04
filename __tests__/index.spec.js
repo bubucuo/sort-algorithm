@@ -2,27 +2,30 @@ describe("数组Diff", () => {
   const {TimSort} = require("../index");
   const sort = TimSort;
 
-  it("分区12345，不考虑分区的真实长度", () => {
-    const arr = [5, 1, 2, 4, 3];
+  const compare = (a, b) => a - b;
 
-    // 1 5
-    // 2 4
-    // 3
-
-    const compare = (a, b) => a - b;
-
-    const res = sort(arr, compare);
-    expect(res).toEqual([1, 5, 2, 4, 3]);
-  });
-
-  // it("整数12345", () => {
+  // it("分区12345，不考虑分区的真实长度", () => {
   //   const arr = [5, 1, 2, 4, 3];
+
+  //   // 1 5
+  //   // 2 4
+  //   // 3
 
   //   const compare = (a, b) => a - b;
 
-  //   const res = sort(arr, compare);
-  //   expect(res).toBe(arr.sort());
+  //       const res = sort([...arr], compare);
+
+  //   expect(res).toEqual([1, 5, 2, 4, 3]);
   // });
+
+  it("1-10", () => {
+    // 1 5
+    const arr = [5, 1, 2, 4, 3, 6, 7, 9, 8, 10];
+
+    const res = sort([...arr], compare);
+
+    expect(res).toEqual(arr.sort(compare));
+  });
 
   // it("整数64", () => {
   //   const arr = [];
@@ -31,11 +34,11 @@ describe("数组Diff", () => {
   //     arr[i] = (Math.random() * 1000) >> 1;
   //   }
 
-  //   const compare = (a, b) => a - b;
+  //   const res = sort([...arr], compare);
 
-  //   const res = sort(arr, compare);
-  //   expect(res).toBe(arr.sort());
+  //   expect(res).toEqual(arr.sort(compare));
   // });
+
   // it("整数164", () => {
   //   const arr = [];
 
@@ -43,10 +46,9 @@ describe("数组Diff", () => {
   //     arr[i] = (Math.random() * 1000) >> 1;
   //   }
 
-  //   const compare = (a, b) => a - b;
+  //   const res = sort([...arr], compare);
 
-  //   const res = sort(arr, compare);
-  //   expect(res).toBe(arr.sort());
+  //   expect(res).toEqual(arr.sort(compare));
   // });
 
   // it("小数164", () => {
@@ -56,9 +58,8 @@ describe("数组Diff", () => {
   //     arr[i] = Math.random() * 1000;
   //   }
 
-  //   const compare = (a, b) => a - b;
+  //   const res = sort([...arr], compare);
 
-  //   const res = sort(arr, compare);
-  //   expect(res).toBe(arr.sort());
+  //   expect(res).toEqual(arr.sort(compare));
   // });
 });
