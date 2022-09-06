@@ -33,7 +33,7 @@ function ArrayTimSortImpl(sortState) {
     PushRun(sortState, low, currentRunLength);
 
     // 合并分区
-    // MergeCollapse(sortState);
+    MergeCollapse(sortState);
 
     // 寻找下一个分区
     low = low + currentRunLength;
@@ -171,6 +171,50 @@ function GetPendingRunLength(pendingRuns, run) {
 
 function SetPendingRunLength(pendingRuns, run, value) {
   pendingRuns[(run << 1) + 1] = value;
+}
+
+// 如果run_length(n - 2) > run_length(n - 1) + run_length(n)，返回true
+function RunInvariantEstablished(pendingRuns, n) {
+  if (n < 2) return true;
+
+  const runLengthN = GetPendingRunLength(pendingRuns, n);
+  const runLengthNM = GetPendingRunLength(pendingRuns, n - 1);
+  const runLengthNMM = GetPendingRunLength(pendingRuns, n - 2);
+
+  return runLengthNMM > runLengthNM + runLengthN;
+}
+
+function MergeCollapse(sortState) {
+  const pendingRuns = sortState.pendingRuns;
+
+  while (sortState.pendingRunsSize > 1) {
+    let n = sortState.pendingRunsSize - 2;
+
+    if (
+      !RunInvariantEstablished(pendingRuns, n + 1) ||
+      !RunInvariantEstablished(pendingRuns, n)
+    ) {
+      if (
+        GetPendingRunLength(pendingRuns, n - 1) <
+        GetPendingRunLength(pendingRuns, n + 1)
+      ) {
+        --n;
+      }
+      MergeAt(sortState, n);
+    } else if (
+      GetPendingRunLength(pendingRuns, n) <=
+      GetPendingRunLength(pendingRuns, n + 1)
+    ) {
+      MergeAt(sortState, n);
+    } else {
+      break;
+    }
+  }
+}
+
+// 合并分区i和i+1
+function MergeAt(sortState, i) {
+  // sortState.pendingRunsSize--;
 }
 
 exports.ArrayTimSortImpl = ArrayTimSortImpl;
