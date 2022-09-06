@@ -213,8 +213,74 @@ function MergeCollapse(sortState) {
 }
 
 // 合并分区i和i+1
+
+// 001  4 34
+// runA 001 4
+// runB 23 45678
 function MergeAt(sortState, i) {
-  // sortState.pendingRunsSize--;
+  const workArray = sortState.workArray;
+  const pendingRuns = sortState.pendingRuns;
+
+  // 分区A的起始下标
+  let baseA = GetPendingRunBase(pendingRuns, i);
+  // 分区A的长度
+  let lengthA = GetPendingRunLength(pendingRuns, i);
+
+  // 分区B的起始下标
+  let baseB = GetPendingRunBase(pendingRuns, i + 1);
+  // 分区B的长度
+  let lengthB = GetPendingRunLength(pendingRuns, i + 1);
+
+  // 修改新分区的长度
+  SetPendingRunLength(pendingRuns, i, lengthA + lengthB);
+
+  if (i === stackSize - 3) {
+    // 如果i是倒数第三个分区，合并就是倒数第二和倒数第三，那么倒数第一个分区
+    // 倒数第一个分区的下标和长度
+    const base = GetPendingRunBase(pendingRuns, i + 2);
+    const length = GetPendingRunLength(pendingRuns, i + 2);
+
+    SetPendingRunBase(pendingRuns, i + 1, base);
+    SetPendingRunLength(pendingRuns, i + 1, length);
+  }
+
+  // 总分区个数-1
+  sortState.pendingRunsSize--;
+
+  const keyRight = workArray[baseB];
+  // array[base+offset-1] <=key<array[base+offset]
+  const k = GallopRight(sortState, keyRight, baseA, lengthA, 0);
+
+  baseA = baseA + k;
+  lengthA = lengthA - k;
+
+  if (lengthA === 0) {
+    return;
+  }
+
+  // 新的分区A的最大值
+  const keyLeft = workArray[baseA + lengthA - 1];
+
+  // array[base+offset]<key<=array[base+offset+1]
+  lengthB = GallopLeft(sortState, keyLeft, baseB, lengthB, lengthB - 1);
+
+  if (lengthB === 0) {
+    return;
+  }
+
+  // todo
+  // if (lengthA <= lengthB) {
+  //   MergeLow();
+  // } else {
+  //   MergeHigh();
+  // }
 }
+
+// todo
+// array[base+offset-1] <=key<array[base+offset]
+function GallopRight() {}
+
+// array[base+offset]<key<=array[base+offset+1]
+function GallopLeft() {}
 
 exports.ArrayTimSortImpl = ArrayTimSortImpl;
