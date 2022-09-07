@@ -18,33 +18,48 @@ describe("数组Diff", () => {
   //   expect(res).toEqual([1, 5, 2, 4, 3]);
   // });
 
-  it("1-10", () => {
-    // 1 5
-    const arr = [5, 1, 2, 4, 3, 6, 7, 9, 8, 10];
+  // it("1-10", () => {
+  //   // 1 5
+  //   const arr = [5, 1, 2, 4, 3, 6, 7, 9, 8, 10];
 
-    const res = sort([...arr], compare);
+  //   const res = sort([...arr], compare);
 
-    expect(res).toEqual(arr.sort(compare));
-  });
+  //   expect(res).toEqual(arr.sort(compare));
+  // });
+
+  // it("整数64", () => {
+  //   const arr = [];
+
+  //   for (let i = 0; i < 64; i++) {
+  //     arr[i] = i % 2; //(Math.random() * 1000) >> 1;
+  //   }
+
+  //   const res = sort([...arr], compare);
+
+  //   expect(res).toEqual(arr.sort(compare));
+  // });
+
+  // it("整数64", () => {
+  //   const arr = [];
+
+  //   for (let i = 0; i < 64; i++) {
+  //     arr[i] = i % 2; //(Math.random() * 1000) >> 1;
+  //   }
+
+  //   const res = sort([...arr], compare);
+
+  //   expect(res).toEqual(arr.sort(compare));
+  // });
 
   it("整数64", () => {
     const arr = [];
 
     for (let i = 0; i < 64; i++) {
-      arr[i] = (Math.random() * 1000) >> 1;
+      arr[i] = i % 32;
     }
 
-    const res = sort([...arr], compare);
-
-    expect(res).toEqual(arr.sort(compare));
-  });
-
-  it("整数164", () => {
-    const arr = [];
-
-    for (let i = 0; i < 164; i++) {
-      arr[i] = (Math.random() * 1000) >> 1;
-    }
+    // order < 0
+    arr[32] = -1;
 
     const res = sort([...arr], compare);
 

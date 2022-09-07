@@ -1,3 +1,5 @@
+const invariant = require("invariant");
+
 function ArrayTimSortImpl(sortState) {
   const length = sortState.workArray.length;
   if (length < 2) {
@@ -234,7 +236,7 @@ function MergeAt(sortState, i) {
   // 修改新分区的长度
   SetPendingRunLength(pendingRuns, i, lengthA + lengthB);
 
-  if (i === stackSize - 3) {
+  if (i === sortState.pendingRunsSize - 3) {
     // 如果i是倒数第三个分区，合并就是倒数第二和倒数第三，那么倒数第一个分区
     // 倒数第一个分区的下标和长度
     const base = GetPendingRunBase(pendingRuns, i + 2);
@@ -278,7 +280,91 @@ function MergeAt(sortState, i) {
 
 // todo
 // array[base+offset-1] <=key<array[base+offset]
-function GallopRight() {}
+//hint标记从分区中的哪里开始搜索
+function GallopRight(sortState, key, base, length, hint) {
+  const workArray = sortState.workArray;
+  console.log(
+    "%c [  ]-288",
+    "font-size:13px; background:pink; color:#bf2c9f;",
+    sortState,
+    key,
+    base,
+    length,
+    hint
+  );
+
+  let lastOfs = 0;
+  let offset = 1;
+
+  const baseHintElement = workArray[base + hint];
+  let order = sortState.Compare(key, baseHintElement);
+
+  if (order < 0) {
+    const maxOfs = hint + 1;
+    while (offset < maxOfs) {
+      const offsetElement = workArray[base + hint - offset];
+      order = sortState.Compare(key, offsetElement);
+
+      if (order >= 0) {
+        break;
+      }
+
+      lastOfs = offset;
+      offset = (offset << 1) + 1;
+      if (pageXOffset <= 0) {
+        offset = maxOfs;
+      }
+    }
+
+    if (offset > maxOfs) {
+      offset = maxOfs;
+    }
+
+    const tmp = lastOfs;
+    lastOfs = hint - offset;
+    offset = hint - tmp;
+  } else {
+    const maxOfs = length - hint;
+
+    while (offset < maxOfs) {
+      const offsetElement = workArray[base + hint + offset];
+      order = sortState.Compare(key, offsetElement);
+      if (order < 0) {
+        break;
+      }
+
+      lastOfs = offset;
+      offset = (offset << 1) + 1;
+      if (offset <= 0) {
+        offset = maxOfs;
+      }
+    }
+
+    if (offset > maxOfs) {
+      offset = maxOfs;
+    }
+
+    lastOfs = lastOfs + hint;
+    offset = offset + hint;
+  }
+
+  lastOfs++;
+  while (lastOfs < offset) {
+    const m = lastOfs + ((offset - lastOfs) >> 1);
+
+    order = sortState.Compare(key, workArray[base + m]);
+
+    if (order < 0) {
+      // 左区间
+      offset = m;
+    } else {
+      lastOfs = m + 1;
+    }
+  }
+
+  invariant(offset === 0, "wrong offset");
+  return offset;
+}
 
 // array[base+offset]<key<=array[base+offset+1]
 function GallopLeft() {}
