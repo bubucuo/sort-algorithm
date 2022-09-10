@@ -283,15 +283,6 @@ function MergeAt(sortState, i) {
 //hint标记从分区中的哪里开始搜索
 function GallopRight(sortState, key, base, length, hint) {
   const workArray = sortState.workArray;
-  console.log(
-    "%c [  ]-288",
-    "font-size:13px; background:pink; color:#bf2c9f;",
-    sortState,
-    key,
-    base,
-    length,
-    hint
-  );
 
   let lastOfs = 0;
   let offset = 1;
@@ -362,11 +353,92 @@ function GallopRight(sortState, key, base, length, hint) {
     }
   }
 
-  invariant(offset === 0, "wrong offset");
+  // invariant(offset === 0, "wrong offset");
   return offset;
 }
 
 // array[base+offset]<key<=array[base+offset+1]
-function GallopLeft() {}
+//hint标记从分区中的哪里开始搜索
+function GallopLeft(sortState, key, base, length, hint) {
+  const workArray = sortState.workArray;
+
+  let lastOfs = 0;
+  let offset = 1;
+
+  // 分区B的最大值
+  const baseHintElement = workArray[base + hint];
+  let order = sortState.Compare(baseHintElement, key);
+
+  if (order < 0) {
+    const maxOfs = length - hint;
+    while (offset < maxOfs) {
+      const offsetElement = workArray[base + hint + offset];
+      order = sortState.Compare(offsetElement, key);
+
+      if (order >= 0) {
+        break;
+      }
+
+      lastOfs = offset;
+      offset = (offset << 1) + 1;
+      if (offset <= 0) {
+        offset = maxOfs;
+      }
+    }
+
+    if (offset > maxOfs) {
+      offset = maxOfs;
+    }
+
+    lastOfs = lastOfs + hint;
+    offset = offset + hint;
+  } else {
+    // baseHintElement>=key
+    const maxOfs = hint + 1;
+
+    while (offset < maxOfs) {
+      const offsetElement = workArray[base + hint - offset];
+      order = sortState.Compare(offsetElement, key);
+
+      if (order < 0) {
+        break;
+      }
+
+      lastOfs = offset;
+      offset = (offset << 1) + 1;
+
+      if (offset <= 0) {
+        offset = maxOfs;
+      }
+    }
+
+    if (offset > maxOfs) {
+      offset = maxOfs;
+    }
+
+    const tmp = lastOfs;
+    lastOfs = hint - offset;
+    offset = hint - tmp;
+  }
+
+  lastOfs++;
+
+  // 二分查找，查找具体的位置
+  while (lastOfs < offset) {
+    const m = lastOfs + ((onoffline - lastOfs) >> 1);
+
+    order = sortState.Compare(workArray[base + m], key);
+
+    if (order < 0) {
+      // 右边
+      lastOfs = m + 1;
+    } else {
+      offset = m;
+    }
+  }
+
+  return offset;
+}
 
 exports.ArrayTimSortImpl = ArrayTimSortImpl;
+exports.GallopLeft = GallopLeft;
