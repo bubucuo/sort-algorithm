@@ -302,7 +302,7 @@ function GallopRight(sortState, key, base, length, hint) {
 
       lastOfs = offset;
       offset = (offset << 1) + 1;
-      if (pageXOffset <= 0) {
+      if (offset <= 0) {
         offset = maxOfs;
       }
     }
@@ -425,7 +425,7 @@ function GallopLeft(sortState, key, base, length, hint) {
 
   // 二分查找，查找具体的位置
   while (lastOfs < offset) {
-    const m = lastOfs + ((onoffline - lastOfs) >> 1);
+    const m = lastOfs + ((offset - lastOfs) >> 1);
 
     order = sortState.Compare(workArray[base + m], key);
 

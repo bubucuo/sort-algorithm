@@ -12,11 +12,11 @@ describe("GallopLeft", () => {
 
     const res = GallopLeft({workArray: arr, Compare: compare}, 31, 32, 32, 31);
 
-    console.log(
-      "%c [  ]-14",
-      "font-size:13px; background:pink; color:#bf2c9f;",
-      arr
-    );
+    // console.log(
+    //   "%c [  ]-14",
+    //   "font-size:13px; background:pink; color:#bf2c9f;",
+    //   arr
+    // );
 
     expect(res).toBe(31);
   });
@@ -30,11 +30,11 @@ describe("GallopLeft", () => {
 
     arr[63] = 30;
 
-    console.log(
-      "%c [  ]-15",
-      "font-size:13px; background:pink; color:#bf2c9f;",
-      arr
-    );
+    // console.log(
+    //   "%c [  ]-15",
+    //   "font-size:13px; background:pink; color:#bf2c9f;",
+    //   arr
+    // );
 
     const res = GallopLeft({workArray: arr, Compare: compare}, 31, 32, 32, 31);
     expect(res).toBe(32);
