@@ -304,9 +304,230 @@ function MergeAt(sortState, i) {
   }
 }
 
-function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {}
+// 合并剩下的分区AB
+// 把剩下的分区A存到临时数组tempArray
+// workArray[dest++]  = workArray[cursorB++]
+// A或者B连续赢得（7次），就可以狂奔（gallop）
+function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
+  invariant(0 < lengthAArg && 0 < lengthBArg, "length > 0");
+  invariant(0 <= baseA && 0 < baseB, "分区A起始下标>=0, 分区b的起始下标>0");
+  invariant(baseA + lengthAArg == baseB, "AB分区连续");
+
+  let lengthA = lengthAArg;
+  let lengthB = lengthBArg;
+
+  const tempArray = GetTempArray(sortState, lengthAArg);
+
+  const workArray = sortState.workArray;
+
+  Copy(workArray, baseA, tempArray, 0, lengthA);
+
+  // 合并分区AB从哪里开始存储元素
+  let dest = baseA;
+  // 最新分区B的起始下标
+  let cursorB = baseB;
+
+  // 临时数组的遍历下表
+  let cursorTemp = 0;
+
+  workArray[dest++] = workArray[cursorB++];
+
+  if (--lengthB === 0) {
+    Succeed();
+    return;
+  }
+
+  if (lengthA === 1) {
+    // 那么临时数组的当前值就是比分区B剩余的元素要大
+    CopyB();
+    return;
+  }
+
+  let minGallop = sortState.minGallop;
+  while (1) {
+    invariant(lengthA > 1 && lengthB > 0, "wrong length");
+
+    let nofWinsA = 0;
+    let nofWinsB = 0;
+
+    while (1) {
+      invariant(lengthA > 1 && lengthB > 0, "wrong length");
+
+      const order = sortState.Compare(
+        workArray[cursorB],
+        tempArray[cursorTemp]
+      );
+
+      if (order < 0) {
+        workArray[dest++] = workArray[cursorB++];
+
+        ++nofWinsB;
+        --lengthB;
+        nofWinsA = 0;
+
+        if (lengthB == 0) {
+          Succeed();
+          return;
+        }
+        if (nofWinsB >= minGallop) {
+          break;
+        }
+      } else {
+        workArray[dest++] = tempArray[cursorTemp++];
+
+        nofWinsA++;
+        --lengthA;
+        nofWinsB = 0;
+
+        if (lengthA === 1) {
+          CopyB();
+          return;
+        }
+        if (nofWinsA >= minGallop) {
+          break;
+        }
+      }
+    }
+
+    // 狂奔 gallop
+    ++minGallop;
+
+    let firstIteration = true;
+    while (
+      nofWinsA >= kMinGallopWins ||
+      nofWinsB >= kMinGallopWins ||
+      firstIteration
+    ) {
+      firstIteration = false;
+      invariant(lengthA > 1 && lengthB > 0, "wrong length");
+
+      minGallop = Math.max(1, minGallop - 1);
+
+      sortState.minGallop = minGallop;
+
+      nofWinsA = GallopRight(
+        sortState,
+        tempArray,
+        workArray[cursorB],
+        cursorTemp,
+        lengthA,
+        0
+      );
+
+      invariant(nofWinsA >= 0, "offset nofWinsA>0");
+
+      if (nofWinsA > 0) {
+        Copy(tempArray, cursorTemp, workArray, dest, nofWinsA);
+
+        dest += nofWinsA;
+        cursorTemp += nofWinsA;
+        lengthA -= nofWinsA;
+
+        if (lengthA === 1) {
+          CopyB();
+          return;
+        }
+
+        if (lengthA === 0) {
+          Succeed();
+          return;
+        }
+      }
+
+      //
+      workArray[dest++] = workArray[cursorB++];
+      if (--lengthB === 0) {
+        Succeed();
+        return;
+      }
+
+      nofWinsB = GallopLeft(
+        sortState,
+        workArray,
+        tempArray[cursorTemp],
+        cursorB,
+        lengthB,
+        0
+      );
+
+      invariant(nofWinsB >= 0, "wrong offset of B");
+
+      if (nofWinsB > 0) {
+        Copy(workArray, cursorB, workArray, dest, nofWinsB);
+
+        dest += nofWinsB;
+        cursorB += nofWinsB;
+        lengthB -= nofWinsB;
+
+        if (lengthB === 0) {
+          Succeed();
+          return;
+        }
+      }
+
+      workArray[dest++] = tempArray[cursorTemp++];
+      if (--lengthA == 1) {
+        CopyB();
+        return;
+      }
+    }
+
+    ++minGallop;
+    sortState.minGallop = minGallop;
+  }
+
+  // 剩余的分区B没有元素,把临时数组TempArray拷贝到WorkArray
+  function Succeed() {
+    if (lengthA > 0) {
+      Copy(tempArray, cursorTemp, workArray, dest, lengthA);
+    }
+  }
+
+  // 分区A只剩下一个元素
+  function CopyB() {
+    invariant(lengthA === 1 && lengthB > 0, "wrong length !");
+    Copy(workArray, cursorB, workArray, dest, lengthB);
+    workArray[dest + lengthB] = tempArray[cursorTemp];
+  }
+}
+
 function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {}
 
+function GetTempArray(sortState, requestedSize) {
+  const minSize = Math.min(32, requestedSize);
+
+  if (sortState.tempArray.length >= minSize) {
+    return sortState.tempArray;
+  }
+
+  const tempArray = new Array(minSize);
+
+  sortState.tempArray = tempArray;
+  return tempArray;
+}
+
+function Copy(source, srcPos, target, dstPos, length) {
+  invariant(srcPos >= 0, "srcPos 下标>=0");
+  invariant(dstPos >= 0, "dstPos 下标>=0");
+  invariant(srcPos <= source.length - length, "数据不够");
+  invariant(dstPos <= target.length - length, "空间不够");
+
+  // source和target可能是同个数组
+  if (srcPos < dstPos) {
+    let srcIdx = srcPos + length - 1;
+    let dstIdx = dstPos + length - 1;
+    while (srcIdx >= srcPos) {
+      target[dstIdx--] = source[srcIdx--];
+    }
+  } else {
+    let srcIdx = srcPos;
+    let dstIdx = dstPos;
+    const to = srcPos + length;
+    while (srcIdx < to) {
+      target[dstIdx++] = source[srcIdx++];
+    }
+  }
+}
 // todo
 // array[base+offset-1] <=key<array[base+offset]
 //hint标记从分区中的哪里开始搜索
