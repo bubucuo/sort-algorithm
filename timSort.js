@@ -1,5 +1,7 @@
 const invariant = require("invariant");
 
+const kMinGallopWins = 7;
+
 function ArrayTimSortImpl(sortState) {
   const length = sortState.workArray.length;
   if (length < 2) {
@@ -251,7 +253,14 @@ function MergeAt(sortState, i) {
 
   const keyRight = workArray[baseB];
   // array[base+offset-1] <=key<array[base+offset]
-  const k = GallopRight(sortState, keyRight, baseA, lengthA, 0);
+  const k = GallopRight(
+    sortState,
+    sortState.workArray,
+    keyRight,
+    baseA,
+    lengthA,
+    0
+  );
 
   baseA = baseA + k;
   lengthA = lengthA - k;
@@ -264,36 +273,56 @@ function MergeAt(sortState, i) {
   const keyLeft = workArray[baseA + lengthA - 1];
 
   // array[base+offset]<key<=array[base+offset+1]
-  lengthB = GallopLeft(sortState, keyLeft, baseB, lengthB, lengthB - 1);
+  lengthB = GallopLeft(
+    sortState,
+    sortState.workArray,
+    keyLeft,
+    baseB,
+    lengthB,
+    lengthB - 1
+  );
 
   if (lengthB === 0) {
     return;
   }
 
+  console.log(
+    "%c [  ]-274",
+    "font-size:13px; background:pink; color:#bf2c9f;",
+    sortState,
+    baseA,
+    lengthA,
+    baseB,
+    lengthB
+  );
+
   // todo
-  // if (lengthA <= lengthB) {
-  //   MergeLow();
-  // } else {
-  //   MergeHigh();
-  // }
+  if (lengthA <= lengthB) {
+    MergeLow(sortState, baseA, lengthA, baseB, lengthB);
+  } else {
+    MergeHigh(sortState, baseA, lengthA, baseB, lengthB);
+  }
 }
+
+function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {}
+function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {}
 
 // todo
 // array[base+offset-1] <=key<array[base+offset]
 //hint标记从分区中的哪里开始搜索
-function GallopRight(sortState, key, base, length, hint) {
+function GallopRight(sortState, array, key, base, length, hint) {
   const workArray = sortState.workArray;
 
   let lastOfs = 0;
   let offset = 1;
 
-  const baseHintElement = workArray[base + hint];
+  const baseHintElement = array[base + hint];
   let order = sortState.Compare(key, baseHintElement);
 
   if (order < 0) {
     const maxOfs = hint + 1;
     while (offset < maxOfs) {
-      const offsetElement = workArray[base + hint - offset];
+      const offsetElement = array[base + hint - offset];
       order = sortState.Compare(key, offsetElement);
 
       if (order >= 0) {
@@ -318,7 +347,7 @@ function GallopRight(sortState, key, base, length, hint) {
     const maxOfs = length - hint;
 
     while (offset < maxOfs) {
-      const offsetElement = workArray[base + hint + offset];
+      const offsetElement = array[base + hint + offset];
       order = sortState.Compare(key, offsetElement);
       if (order < 0) {
         break;
@@ -343,7 +372,7 @@ function GallopRight(sortState, key, base, length, hint) {
   while (lastOfs < offset) {
     const m = lastOfs + ((offset - lastOfs) >> 1);
 
-    order = sortState.Compare(key, workArray[base + m]);
+    order = sortState.Compare(key, array[base + m]);
 
     if (order < 0) {
       // 左区间
@@ -359,20 +388,20 @@ function GallopRight(sortState, key, base, length, hint) {
 
 // array[base+offset]<key<=array[base+offset+1]
 //hint标记从分区中的哪里开始搜索
-function GallopLeft(sortState, key, base, length, hint) {
+function GallopLeft(sortState, array, key, base, length, hint) {
   const workArray = sortState.workArray;
 
   let lastOfs = 0;
   let offset = 1;
 
   // 分区B的最大值
-  const baseHintElement = workArray[base + hint];
+  const baseHintElement = array[base + hint];
   let order = sortState.Compare(baseHintElement, key);
 
   if (order < 0) {
     const maxOfs = length - hint;
     while (offset < maxOfs) {
-      const offsetElement = workArray[base + hint + offset];
+      const offsetElement = array[base + hint + offset];
       order = sortState.Compare(offsetElement, key);
 
       if (order >= 0) {
@@ -397,7 +426,7 @@ function GallopLeft(sortState, key, base, length, hint) {
     const maxOfs = hint + 1;
 
     while (offset < maxOfs) {
-      const offsetElement = workArray[base + hint - offset];
+      const offsetElement = array[base + hint - offset];
       order = sortState.Compare(offsetElement, key);
 
       if (order < 0) {
@@ -427,7 +456,7 @@ function GallopLeft(sortState, key, base, length, hint) {
   while (lastOfs < offset) {
     const m = lastOfs + ((offset - lastOfs) >> 1);
 
-    order = sortState.Compare(workArray[base + m], key);
+    order = sortState.Compare(array[base + m], key);
 
     if (order < 0) {
       // 右边
