@@ -59,7 +59,7 @@ describe("数组Diff", () => {
     }
 
     // order < 0
-    // arr[32] = -1;
+    arr[32] = -1;
 
     const res = sort([...arr], compare);
 

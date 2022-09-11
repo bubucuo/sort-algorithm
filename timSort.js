@@ -316,7 +316,7 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
   let lengthA = lengthAArg;
   let lengthB = lengthBArg;
 
-  const tempArray = GetTempArray(sortState, lengthAArg);
+  const tempArray = GetTempArray(sortState, lengthA);
 
   const workArray = sortState.workArray;
 
@@ -491,7 +491,194 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
   }
 }
 
-function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {}
+// 合并剩下的分区AB
+// 把剩下的分区B存到临时数组tempArray
+// workArray[dest--]  = workArray[cursorA--]
+// A或者B连续赢得（7次），就可以狂奔（gallop）
+
+// runA 001 34
+// runB 2 45678
+function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {
+  invariant(0 < lengthAArg && 0 < lengthBArg, "length > 0");
+  invariant(0 <= baseA && 0 < baseB, "分区A起始下标>=0, 分区b的起始下标>0");
+  invariant(baseA + lengthAArg == baseB, "AB分区连续");
+
+  let lengthA = lengthAArg;
+  let lengthB = lengthBArg;
+
+  const tempArray = GetTempArray(sortState, lengthBArg);
+
+  const workArray = sortState.workArray;
+
+  Copy(workArray, baseB, tempArray, 0, lengthB);
+
+  let dest = baseB + lengthB - 1;
+  let cursorA = baseA + lengthA - 1;
+
+  let cursorTemp = lengthB - 1;
+
+  workArray[dest--] = workArray[cursorA--];
+
+  if (--lengthA === 0) {
+    Succeed();
+    return;
+  }
+
+  if (lengthB === 1) {
+    CopyA();
+    return;
+  }
+
+  let minGallop = sortState.minGallop;
+
+  while (1) {
+    let nofWinsA = 0;
+    let nofWinsB = 0;
+
+    while (1) {
+      const order = sortState.Compare(
+        tempArray[cursorTemp],
+        workArray[cursorA]
+      );
+      if (order < 0) {
+        workArray[dest--] = workArray[cursorA--];
+
+        ++nofWinsA;
+        --lengthA;
+        nofWinsB = 0;
+
+        if (lengthA === 0) {
+          Succeed();
+          return;
+        }
+        if (nofWinsA >= minGallop) {
+          break;
+        }
+      } else {
+        workArray[dest--] = tempArray[cursorTemp--];
+
+        ++nofWinsB;
+        --lengthB;
+        nofWinsA = 0;
+
+        if (lengthB === 1) {
+          CopyA();
+          return;
+        }
+        if (nofWinsB >= minGallop) {
+          break;
+        }
+      }
+    }
+
+    ++minGallop;
+    let firstIteration = true;
+    while (
+      nofWinsA >= kMinGallopWins ||
+      nofWinsB >= kMinGallopWins ||
+      firstIteration
+    ) {
+      firstIteration = false;
+      invariant(lengthA > 0 && lengthB > 1);
+
+      minGallop = Math.max(1, minGallop - 1);
+
+      sortState.minGallop = minGallop;
+      // 从分区A中进行快速查找,key是分区B的最大值
+      let k = GallopRight(
+        sortState,
+        workArray,
+        tempArray[cursorTemp],
+        baseA,
+        lengthA,
+        lengthA - 1
+      );
+
+      invariant(k >= 0, "wrong offset k");
+
+      nofWinsA = lengthA - k;
+
+      if (nofWinsA > 0) {
+        dest = dest - nofWinsA;
+        cursorA = cursorA - nofWinsA;
+
+        Copy(workArray, cursorA + 1, workArray, dest + 1, nofWinsA);
+
+        lengthA -= nofWinsA;
+
+        if (lengthA === 0) {
+          Succeed();
+          return;
+        }
+      }
+
+      workArray[dest--] = tempArray[cursorTemp--];
+      if (--lengthB === 1) {
+        CopyA();
+        return;
+      }
+
+      // 在b分区中快速查找
+      k = GallopLeft(
+        sortState,
+        tempArray,
+        workArray[cursorTemp],
+        0,
+        lengthB,
+        lengthB - 1
+      );
+      invariant(k >= 0, "wrong offset k");
+
+      nofWinsB = lengthB - k;
+
+      if (nofWinsB > 0) {
+        dest = dest - nofWinsB;
+        cursorTemp = cursorTemp - nofWinsB;
+
+        Copy(tempArray, cursorTemp + 1, workArray, dest + 1, nofWinsB);
+
+        lengthB -= nofWinsB;
+
+        if (lengthB === 1) {
+          CopyA();
+          return;
+        }
+
+        if (lengthB === 0) {
+          // Succeed()
+          return;
+        }
+      }
+
+      workArray[dest--] = workArray[cursorA--];
+
+      if (--lengthA == 0) {
+        Succeed();
+        return;
+      }
+    }
+
+    ++minGallop;
+    sortState.minGallop = minGallop;
+  }
+
+  // lengthA==0
+  function Succeed() {
+    if (lengthB > 0) {
+      invariant(lengthA === 0, "lengthA should be 0");
+      Copy(tempArray, 0, workArray, dest - lengthB - 1, lengthB);
+    }
+  }
+
+  function CopyA() {
+    invariant(lengthB === 1 && lengthA > 0, "wrong");
+    dest = dest - lengthA;
+    cursorA = cursorA - lengthA;
+
+    Copy(workArray, cursorA + 1, workArray, dest + 1, lengthA);
+    workArray[dest] = tempArray[cursorTemp];
+  }
+}
 
 function GetTempArray(sortState, requestedSize) {
   const minSize = Math.min(32, requestedSize);
