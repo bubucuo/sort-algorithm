@@ -1,4 +1,4 @@
-const invariant = require("invariant");
+// const invariant = require("invariant");
 
 const kMinGallopWins = 7;
 
@@ -45,7 +45,7 @@ function ArrayTimSortImpl(sortState) {
   }
 
   // 合并栈中的所有的所有分区， 直到只剩下一个，排序结束
-  // MergeForceCollapse(sortState);
+  MergeForceCollapse(sortState);
 }
 
 // 寻找分区，并返回分区长度值
@@ -286,16 +286,6 @@ function MergeAt(sortState, i) {
     return;
   }
 
-  console.log(
-    "%c [  ]-274",
-    "font-size:13px; background:pink; color:#bf2c9f;",
-    sortState,
-    baseA,
-    lengthA,
-    baseB,
-    lengthB
-  );
-
   // todo
   if (lengthA <= lengthB) {
     MergeLow(sortState, baseA, lengthA, baseB, lengthB);
@@ -309,14 +299,14 @@ function MergeAt(sortState, i) {
 // workArray[dest++]  = workArray[cursorB++]
 // A或者B连续赢得（7次），就可以狂奔（gallop）
 function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
-  invariant(0 < lengthAArg && 0 < lengthBArg, "length > 0");
-  invariant(0 <= baseA && 0 < baseB, "分区A起始下标>=0, 分区b的起始下标>0");
-  invariant(baseA + lengthAArg == baseB, "AB分区连续");
+  // invariant(0 < lengthAArg && 0 < lengthBArg, "length > 0");
+  // invariant(0 <= baseA && 0 < baseB, "分区A起始下标>=0, 分区b的起始下标>0");
+  // invariant(baseA + lengthAArg == baseB, "AB分区连续");
 
   let lengthA = lengthAArg;
   let lengthB = lengthBArg;
 
-  const tempArray = GetTempArray(sortState, lengthA);
+  const tempArray = new Array(lengthA);
 
   const workArray = sortState.workArray;
 
@@ -345,13 +335,13 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
 
   let minGallop = sortState.minGallop;
   while (1) {
-    invariant(lengthA > 1 && lengthB > 0, "wrong length");
+    // invariant(lengthA > 1 && lengthB > 0, "wrong length");
 
     let nofWinsA = 0;
     let nofWinsB = 0;
 
     while (1) {
-      invariant(lengthA > 1 && lengthB > 0, "wrong length");
+      // invariant(lengthA > 1 && lengthB > 0, "wrong length");
 
       const order = sortState.Compare(
         workArray[cursorB],
@@ -399,7 +389,7 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
       firstIteration
     ) {
       firstIteration = false;
-      invariant(lengthA > 1 && lengthB > 0, "wrong length");
+      // invariant(lengthA > 1 && lengthB > 0, "wrong length");
 
       minGallop = Math.max(1, minGallop - 1);
 
@@ -414,7 +404,7 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
         0
       );
 
-      invariant(nofWinsA >= 0, "offset nofWinsA>0");
+      // invariant(nofWinsA >= 0, "offset nofWinsA>0");
 
       if (nofWinsA > 0) {
         Copy(tempArray, cursorTemp, workArray, dest, nofWinsA);
@@ -450,7 +440,7 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
         0
       );
 
-      invariant(nofWinsB >= 0, "wrong offset of B");
+      // invariant(nofWinsB >= 0, "wrong offset of B");
 
       if (nofWinsB > 0) {
         Copy(workArray, cursorB, workArray, dest, nofWinsB);
@@ -485,7 +475,7 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
 
   // 分区A只剩下一个元素
   function CopyB() {
-    invariant(lengthA === 1 && lengthB > 0, "wrong length !");
+    // invariant(lengthA === 1 && lengthB > 0, "wrong length !");
     Copy(workArray, cursorB, workArray, dest, lengthB);
     workArray[dest + lengthB] = tempArray[cursorTemp];
   }
@@ -499,14 +489,14 @@ function MergeLow(sortState, baseA, lengthAArg, baseB, lengthBArg) {
 // runA 001 34
 // runB 2 45678
 function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {
-  invariant(0 < lengthAArg && 0 < lengthBArg, "length > 0");
-  invariant(0 <= baseA && 0 < baseB, "分区A起始下标>=0, 分区b的起始下标>0");
-  invariant(baseA + lengthAArg == baseB, "AB分区连续");
+  // invariant(0 < lengthAArg && 0 < lengthBArg, "length > 0");
+  // invariant(0 <= baseA && 0 < baseB, "分区A起始下标>=0, 分区b的起始下标>0");
+  // invariant(baseA + lengthAArg == baseB, "AB分区连续");
 
   let lengthA = lengthAArg;
   let lengthB = lengthBArg;
 
-  const tempArray = GetTempArray(sortState, lengthBArg);
+  const tempArray = new Array(lengthBArg);
 
   const workArray = sortState.workArray;
 
@@ -579,7 +569,7 @@ function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {
       firstIteration
     ) {
       firstIteration = false;
-      invariant(lengthA > 0 && lengthB > 1);
+      // invariant(lengthA > 0 && lengthB > 1, "");
 
       minGallop = Math.max(1, minGallop - 1);
 
@@ -594,7 +584,7 @@ function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {
         lengthA - 1
       );
 
-      invariant(k >= 0, "wrong offset k");
+      // invariant(k >= 0, "wrong offset k");
 
       nofWinsA = lengthA - k;
 
@@ -622,12 +612,13 @@ function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {
       k = GallopLeft(
         sortState,
         tempArray,
-        workArray[cursorTemp],
+        // sy
+        workArray[cursorA],
         0,
         lengthB,
         lengthB - 1
       );
-      invariant(k >= 0, "wrong offset k");
+      // invariant(k >= 0, "wrong offset k");
 
       nofWinsB = lengthB - k;
 
@@ -665,13 +656,14 @@ function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {
   // lengthA==0
   function Succeed() {
     if (lengthB > 0) {
-      invariant(lengthA === 0, "lengthA should be 0");
-      Copy(tempArray, 0, workArray, dest - lengthB - 1, lengthB);
+      // invariant(lengthA === 0, "lengthA should be 0");
+
+      Copy(tempArray, 0, workArray, dest - lengthB + 1, lengthB);
     }
   }
 
   function CopyA() {
-    invariant(lengthB === 1 && lengthA > 0, "wrong");
+    // invariant(lengthB === 1 && lengthA > 0, "wrong");
     dest = dest - lengthA;
     cursorA = cursorA - lengthA;
 
@@ -680,24 +672,11 @@ function MergeHigh(sortState, baseA, lengthAArg, baseB, lengthBArg) {
   }
 }
 
-function GetTempArray(sortState, requestedSize) {
-  const minSize = Math.min(32, requestedSize);
-
-  if (sortState.tempArray.length >= minSize) {
-    return sortState.tempArray;
-  }
-
-  const tempArray = new Array(minSize);
-
-  sortState.tempArray = tempArray;
-  return tempArray;
-}
-
 function Copy(source, srcPos, target, dstPos, length) {
-  invariant(srcPos >= 0, "srcPos 下标>=0");
-  invariant(dstPos >= 0, "dstPos 下标>=0");
-  invariant(srcPos <= source.length - length, "数据不够");
-  invariant(dstPos <= target.length - length, "空间不够");
+  // invariant(srcPos >= 0, "srcPos 下标>=0");
+  // invariant(dstPos >= 0, "dstPos 下标>=0");
+  // invariant(srcPos <= source.length - length, "数据不够");
+  // invariant(dstPos <= target.length - length, "空间不够");
 
   // source和target可能是同个数组
   if (srcPos < dstPos) {
@@ -790,7 +769,7 @@ function GallopRight(sortState, array, key, base, length, hint) {
     }
   }
 
-  // invariant(offset === 0, "wrong offset");
+  // // invariant(offset === 0, "wrong offset");
   return offset;
 }
 
@@ -875,6 +854,24 @@ function GallopLeft(sortState, array, key, base, length, hint) {
   }
 
   return offset;
+}
+
+function MergeForceCollapse(sortState) {
+  const pendingRuns = sortState.pendingRuns;
+
+  // Reload the stack size because MergeAt might change it.
+  while (sortState.pendingRunsSize > 1) {
+    let n = sortState.pendingRunsSize - 2;
+
+    if (
+      n > 0 &&
+      GetPendingRunLength(pendingRuns, n - 1) <
+        GetPendingRunLength(pendingRuns, n + 1)
+    ) {
+      --n;
+    }
+    MergeAt(sortState, n);
+  }
 }
 
 exports.ArrayTimSortImpl = ArrayTimSortImpl;
